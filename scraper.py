@@ -1,35 +1,49 @@
 import requests
 from bs4 import BeautifulSoup
+from boxes import CASES
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-    "Accept-Language": "en-US,en;q=0.9",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 }
 
-CASE_URLS = {
-    "Revolution Case": "https://steamcommunity.com/market/listings/730/Revolution%20Case",
-    "Kilowatt Case": "https://steamcommunity.com/market/listings/730/Kilowatt%20Case",
-    "Recoil Case": "https://steamcommunity.com/market/listings/730/Recoil%20Case"
-}
-
-def get_price(url):
+def fetch_price(url):
     try:
-        html = requests.get(url, headers=HEADERS, timeout=10).text
-        soup = BeautifulSoup(html, "lxml")
+        r = requests.get(url, headers=HEADERS, timeout=10)
+        soup = BeautifulSoup(r.text, "html.parser")
 
-        price_el = soup.select_one(".market_listing_price.market_listing_price_with_fee")
+        price_el = soup.select_one("#market_commodity_buyrequests span.normal_price")
+
+        if not price_el:
+            price_el = soup.select_one(".market_commodity_order_divider")
+
         if not price_el:
             return "N/A"
 
-        return price_el.get_text(strip=True)
-    except:
+        text = price_el.get_text(strip=True)
+
+        # Captura precios tipo:
+        # "$1.23 USD"
+        # "$0.87"
+        # "Starting at: $13.26"
+        import re
+        match = re.search(r"\$([0-9]+\.[0-9]+)", text)
+        if match:
+            return f"${match.group(1)}"
+
         return "N/A"
 
-def fetch_case_prices():
+    except Exception:
+        return "N/A"
+
+
+def get_all_cases():
     result = []
 
-    for name, url in CASE_URLS.items():
-        price = get_price(url)
-        result.append({"name": name, "price": price})
+    for name, url in CASES:
+        price = fetch_price(url)
+        result.append({
+            "name": name,
+            "price": price
+        })
 
-    return {"cases": result}
+    return result

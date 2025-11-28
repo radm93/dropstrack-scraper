@@ -6,14 +6,13 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return jsonify({"status": "OK", "message": "DropStrack scraper running"})
+    return jsonify({"status": "running"})
 
 @app.route("/cases")
-def cases():
-    data = get_all_cases()
+def list_cases():
     return jsonify({
         "updated": __import__("time").time(),
-        "cases": data
+        "cases": get_all_cases()
     })
 
 if __name__ == "__main__":

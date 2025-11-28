@@ -1,4 +1,3 @@
-# server.py
 from flask import Flask, jsonify
 import threading
 from scraper import SCRAPED_DATA, scrape_all
@@ -19,6 +18,5 @@ def refresh():
     thread.start()
     return jsonify({"status": "Scraping started"})
 
-# IMPORTANTE:
-# NO poner app.run()
-# Gunicorn va a manejar la app en Railway.
+# ❗ NO USAR app.run() EN RAILWAY
+# Gunicorn ejecutará esto automáticamente
